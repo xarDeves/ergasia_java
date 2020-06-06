@@ -18,10 +18,23 @@ import java.io.IOException;
  * All the listeners are "custom made" (see inner classes bellow)
  * as the controller is instantiated in main, they get attached to the ui elements.
  * Using Synchronized Threads to handle IO, ensures collision avoidance and data loss.
- * As for the swing workers, i am a bit hesitant as i am not very accustomed to java's concurrency,
- * although it seems to function as expected.
  * (Arguably over engineered and unnecessary complex for such assignment)
- * (i wasn't able to test whether IO is actually thread safe, at least it works)
+ * (i wasn't able to test whether IO is actually thread safe, Although it should be)
+ *
+ * Note on SwingWorkers:
+ * As per the documentation the correct usage is for the "DoInBackground" to compute
+ * and "done" to post the results but "done" takes a list of chunks as an argument
+ * meaning i would need to abstract the panel which displays the info from each book
+ * in a separate class (which would be better in anyway but i tried it, and it didn't work out).
+ * I understand it is a sloppy approach but frankly i don't really see a point to use "done" in this case.
+ *
+ * also the:
+ *
+ *          if (worker != null) {
+                worker.cancel(true);
+            }
+ *
+ * does not work for some reason.
  */
 
 public class Controller {
@@ -32,6 +45,7 @@ public class Controller {
     private final Checker checker;
     private InsertGUI insertGUI;
     private boolean insertFormExists = false;
+    private SwingWorker worker;
 
     public Controller(MainGUI mainGUI, Model model, IOManager manager, Checker checker) {
         this.mainGUI = mainGUI;
@@ -73,7 +87,11 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            if (worker != null) {
+                worker.cancel(true);
+            }
+
+            worker = new SwingWorker<>() {
                 @Override
                 protected Void doInBackground() {
 
@@ -96,7 +114,11 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            if (worker != null) {
+                worker.cancel(true);
+            }
+
+            worker = new SwingWorker<>() {
                 @Override
                 protected Void doInBackground() {
                     mainGUI.showBooksGui(model.getAllBooks(), true);
@@ -140,12 +162,31 @@ public class Controller {
         }
     }
 
+/*    public class ShowAllWorker extends SwingWorker {
+
+        @Override
+        protected Void doInBackground() throws Exception {
+            return null;
+        }
+    }
+
+    public class SearchWorker extends SwingWorker {
+        @Override
+        protected Void doInBackground() throws Exception {
+            return null;
+        }
+    }*/
+
     class SearchListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            SwingWorker<Void, Void> worker = new SwingWorker<>() {
+            if (worker != null) {
+                worker.cancel(true);
+            }
+
+            worker = new SwingWorker<>() {
 
                 @Override
                 protected Void doInBackground() {
@@ -154,7 +195,8 @@ public class Controller {
                         //my eyes hurt
                         mainGUI.showBooksGui(
                                 model.getBookSearched(
-                                        checker.removePunctuation(mainGUI.getFieldText())), false);
+                                        checker.removePunctuation(
+                                                mainGUI.getFieldText())), false);
                     } catch (InvalidNameException ex) {
                         mainGUI.showPopUpMain(ex.getMessage());
                     }

@@ -40,8 +40,7 @@ public class MainGUI extends JFrame {
 
     }
 
-    //it would be better(?) to iterate the list in the model.Controller and pass each entry here,
-    //but i am bored to refactor this:
+    //it would be better to iterate the list in the Controller and pass each entry here ?
     public void showBooksGui(List<LinkedHashMap<String, String>> books, Boolean deleteButton) {
 
         resultsPanel.removeAll();
@@ -75,8 +74,12 @@ public class MainGUI extends JFrame {
             resultsPanel.add(Box.createHorizontalStrut(2));
 
             resultsPanel.revalidate();
+            resultsPanel.repaint();
 
         }
+
+        resultsPanel.revalidate();
+        resultsPanel.repaint();
 
     }
 
