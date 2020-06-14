@@ -11,8 +11,6 @@
 import model.Controller;
 import model.Model;
 import ui.MainGUI;
-import utilities.Checker;
-import utilities.IOManager;
 
 import javax.swing.*;
 import java.awt.*;
@@ -25,15 +23,6 @@ public class MainClass {
 
     public static void main(String[] args) {
 
-
-        try {
-            //dispatching the GUI in a Thread safe way
-            //using the "invokeAndWait" ensures the gui will be created before passed to the Controller.
-            EventQueue.invokeAndWait(() -> gui = new MainGUI());
-        } catch (InterruptedException | InvocationTargetException e) {
-            e.printStackTrace();
-        }
-
         try {
             //Γερασιμος Ελευθεριοτης - 15692 - suggested this one:
             UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -44,10 +33,15 @@ public class MainClass {
             e.printStackTrace();
         }
 
-        Model model = new Model();
-        Checker checker = new Checker();
-        IOManager manager = new IOManager(model, checker);
-        new Controller(gui, model, manager, checker);
+        try {
+            //dispatching the GUI in a Thread safe way
+            //using the "invokeAndWait" ensures the gui will be created before passed to the Controller.
+            EventQueue.invokeAndWait(() -> gui = new MainGUI());
+        } catch (InterruptedException | InvocationTargetException e) {
+            e.printStackTrace();
+        }
+
+        new Controller(gui, new Model());
 
     }
 

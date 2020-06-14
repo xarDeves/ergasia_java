@@ -1,11 +1,28 @@
 package utilities;
+
 import javax.naming.InvalidNameException;
 import java.security.InvalidParameterException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
-public class Checker {
+//This could be a static class (?)
+//but i recon a singleton is cleaner.
+public class CheckerSingleton {
 
     private static final char[] punc = {'Ά', 'Έ', 'Ή', 'Ί', 'Ό', 'Ύ', 'Ώ'};
     private static final char[] noPunc = {'Α', 'Ε', 'Η', 'Ι', 'Ο', 'Υ', 'Ω'};
+
+    private static CheckerSingleton instance = null;
+
+    private CheckerSingleton() { }
+
+    public static CheckerSingleton getInstance() {
+        if (instance == null)
+            instance = new CheckerSingleton();
+
+        return instance;
+    }
 
     public void checkEmpty(String value) throws InvalidNameException {
 
@@ -13,6 +30,8 @@ public class Checker {
 
     }
 
+    //i read something about normalization after the implementation of this method,
+    //maybe it is faster, but many things in this app could be so i just left it as is.
     public String removePunctuation(String value) throws InvalidNameException {
 
         checkEmpty(value);
@@ -21,6 +40,7 @@ public class Checker {
         StringBuilder formatted = new StringBuilder();
 
         for (int i = 0; i < value.length(); i++) {
+
             letter = value.charAt(i);
             for (int j = 0; j < punc.length; j++) {
                 if (letter == punc[j]) {
@@ -32,7 +52,7 @@ public class Checker {
         return formatted.toString();
     }
 
-    public String checkIsbn(String value) throws InvalidNameException {
+    public String checkIsbn(String value, List<LinkedHashMap<String, String>> books) throws InvalidNameException {
 
         checkEmpty(value);
 
@@ -44,6 +64,14 @@ public class Checker {
             }
         } catch (Exception e) {
             throw new InvalidParameterException("ISBN must be a number between 978 and 979");
+        }
+
+        //check for isbn uniqueness.
+        for (Map<String, String> bookMap : books) {
+
+            if (bookMap.containsValue(value)) {
+                throw new InvalidParameterException("ISBN must be unique");
+            }
         }
 
         return value;

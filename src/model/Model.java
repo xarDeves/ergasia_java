@@ -22,7 +22,7 @@ import java.util.Map;
 
 public class Model {
 
-    private List<LinkedHashMap<String, String>> bookList;
+    private final List<LinkedHashMap<String, String>> bookList;
 
     public Model() {
         bookList = new ArrayList<>();

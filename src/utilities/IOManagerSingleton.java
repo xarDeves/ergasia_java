@@ -10,25 +10,28 @@ import java.util.Map;
 
 //Synchronized methods ensure thread safety (just in case).
 //The fact that this is actually harder to implement than a database makes me cry.
-public class IOManager {
+//Also it might have been better to set the "Model" as a field rather than passing it as an argument.
+public class IOManagerSingleton {
 
     private InsertGUI insertGUI;
-    private final Model model;
-    private final Checker checker;
+    private final CheckerSingleton checker = CheckerSingleton.getInstance();
 
-    public IOManager(Model model, Checker checker) {
+    private static IOManagerSingleton instance = null;
 
-        this.model = model;
-        this.checker = checker;
+    private IOManagerSingleton() { }
 
+    public static IOManagerSingleton getInstance() {
+        if (instance == null)
+            instance = new IOManagerSingleton();
+
+        return instance;
     }
 
-    public synchronized void writeToFile() {
+    public synchronized void writeToFile(List<LinkedHashMap<String, String>> books) {
 
         //try-with-resources statement, basically auto closes the writer:
         try (FileWriter fw = new FileWriter("Books.txt")) {
 
-            List<LinkedHashMap<String, String>> books = model.getAllBooks();
             for (Map<String, String> bookMap : books) {
                 for (Map.Entry<String, String> entry : bookMap.entrySet()) {
                     fw.write(entry.getValue() + "\n");
@@ -44,7 +47,7 @@ public class IOManager {
 
     }
 
-    public synchronized void readFromFile() throws IOException {
+    public synchronized void readFromFile(Model model) throws IOException {
 
         //try-with-resources statement, basically auto closes the reader:
         try (BufferedReader br = new BufferedReader(new FileReader("books.txt"))) {
@@ -76,6 +79,7 @@ public class IOManager {
                     book.put("type", br.readLine());
 
                     model.setNewBook(book);
+
                 }
 
                 line = br.readLine();
@@ -85,8 +89,7 @@ public class IOManager {
 
     }
 
-    //TODO check isbn uniqueness
-    public synchronized void handleData() {
+    public synchronized void handleData(Model model) {
 
         LinkedHashMap<String, String> book = new LinkedHashMap<>();
 
@@ -96,7 +99,7 @@ public class IOManager {
             String superType = insertGUI.getSuperType();
             String title = checker.removePunctuation(insertGUI.getTitle());
             String author = checker.removePunctuation(insertGUI.getAuthor());
-            String isbn = checker.checkIsbn(insertGUI.getIsbn());
+            String isbn = checker.checkIsbn(insertGUI.getIsbn(), model.getAllBooks());
             String release = checker.checkRelease(insertGUI.getRelease());
             String type = insertGUI.getType();
             String branch = insertGUI.getBranch();
@@ -117,7 +120,7 @@ public class IOManager {
             }
 
             model.setNewBook(book);
-            writeToFile();
+            writeToFile(model.getAllBooks());
 
         } catch (Exception e) {
             insertGUI.showPopUpInsert(e.getMessage());

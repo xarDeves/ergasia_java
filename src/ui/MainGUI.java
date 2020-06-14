@@ -10,7 +10,6 @@ import java.util.Map;
 
 public class MainGUI extends JFrame {
 
-    private final JFrame frame;
     private JButton showBooksBtn;
     private JButton searchBtn;
     private JButton insertBtn;
@@ -20,11 +19,11 @@ public class MainGUI extends JFrame {
     private JPanel resultsPanel;
     private JScrollPane booksScrollPane;
 
-    private ArrayList<JButton> deleteButtons = new ArrayList<>();
+    private final ArrayList<JButton> deleteButtons = new ArrayList<>();
 
     public MainGUI() {
 
-        frame = new JFrame("Book Logger");
+        JFrame frame = new JFrame("Book Logger");
         frame.setContentPane(mainPanel);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.pack();

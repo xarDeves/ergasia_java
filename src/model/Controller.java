@@ -2,8 +2,8 @@ package model;
 
 import ui.InsertGUI;
 import ui.MainGUI;
-import utilities.Checker;
-import utilities.IOManager;
+import utilities.CheckerSingleton;
+import utilities.IOManagerSingleton;
 
 import javax.naming.InvalidNameException;
 import javax.swing.*;
@@ -41,17 +41,17 @@ public class Controller {
 
     private final MainGUI mainGUI;
     private final Model model;
-    private final IOManager manager;
-    private final Checker checker;
-    private InsertGUI insertGUI;
+    private final IOManagerSingleton manager;
+    private final CheckerSingleton checker;
     private boolean insertFormExists = false;
-    private SwingWorker worker;
+    private SwingWorker<Void, Void> worker;
+    private InsertGUI insertGUI;
 
-    public Controller(MainGUI mainGUI, Model model, IOManager manager, Checker checker) {
+    public Controller(MainGUI mainGUI, Model model) {
         this.mainGUI = mainGUI;
         this.model = model;
-        this.manager = manager;
-        this.checker = checker;
+        this.manager = IOManagerSingleton.getInstance();
+        this.checker = CheckerSingleton.getInstance();
 
         this.mainGUI.addShowBooksListener(new ShowBooksListener());
         this.mainGUI.addInsertListener(new InsertListener());
@@ -59,7 +59,7 @@ public class Controller {
         this.mainGUI.addSearchListener(new SearchListener());
 
         try {
-            manager.readFromFile();
+            manager.readFromFile(model);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -96,7 +96,7 @@ public class Controller {
                 protected Void doInBackground() {
 
                     model.deleteBook(e.getActionCommand());
-                    manager.writeToFile();
+                    manager.writeToFile(model.getAllBooks());
                     mainGUI.showBooksGui(model.getAllBooks(), true);
                     addDeleteListeners();
 
@@ -137,7 +137,7 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            //in order for the form to appear only once.
+            //in order for the insert form to appear only once.
             //(i managed to implement a system where multiple forms could be present
             //and the data would still be fetched correctly (using list of insertGUIs to distinguish between them)
             //but it didn't make sense so i scraped it).
@@ -157,7 +157,7 @@ public class Controller {
         public void actionPerformed(ActionEvent e) {
 
             manager.setGui(insertGUI);
-            manager.handleData();
+            manager.handleData(model);
 
         }
     }
@@ -190,7 +190,6 @@ public class Controller {
 
                 @Override
                 protected Void doInBackground() {
-                    System.out.println(mainGUI.getFieldText());
                     try {
                         //my eyes hurt
                         mainGUI.showBooksGui(
