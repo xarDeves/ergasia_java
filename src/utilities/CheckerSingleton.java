@@ -15,7 +15,8 @@ public class CheckerSingleton {
 
     private static CheckerSingleton instance = null;
 
-    private CheckerSingleton() { }
+    private CheckerSingleton() {
+    }
 
     public static CheckerSingleton getInstance() {
         if (instance == null)
@@ -31,7 +32,7 @@ public class CheckerSingleton {
     }
 
     //i read something about normalization after the implementation of this method,
-    //maybe it is faster, but many things in this app could be so i just left it as is.
+    //plus i could use regex which i guess it would be way faster, but i absolutely hate regex.
     public String removePunctuation(String value) throws InvalidNameException {
 
         checkEmpty(value);
@@ -49,6 +50,7 @@ public class CheckerSingleton {
             }
             formatted.append(letter);
         }
+
         return formatted.toString();
     }
 

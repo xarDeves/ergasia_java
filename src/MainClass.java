@@ -3,9 +3,13 @@
  * As you can see, i chose not to abstract the concept of "book"
  * since this is a purely event driven approach.
  *
+ * tested with 1.000.000 lines of text in "Books.txt"
+ * ram usage before rendering the books ~160mb
+ * ram usage after rendering the books ~750mb
+ *
  * Ντεβές Χαράλαμπος - 15766 -
  *
- * (Όσο για τα comments στα αγγλικά, δεν μπορώ να καταλάβω γιατί, άλλα με βολεύει πολύ περισσότερο έτσι.)
+ * (Όσο για τα comments στα αγγλικά, δεν μπορώ να καταλάβω γιατί, άλλα με βολεύει πολύ περισσότερο έτσι)
  */
 
 import model.Controller;

@@ -12,6 +12,9 @@ import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.IOException;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
 
 /*
  * Main logic is here.
@@ -66,14 +69,6 @@ public class Controller {
 
     }
 
-    private void addDeleteListeners() {
-        //I chose to use a list of buttons to avoid coupling MainGUI with the model.Controller.
-        //(although the button list is stored in MainGUI instead of the model.Model)
-        for (JButton button : mainGUI.getDeleteButtons()) {
-            button.addActionListener(new DeleteBooksListener());
-        }
-    }
-
     class WindowClosedListener extends WindowAdapter {
         @Override
         public void windowClosed(WindowEvent e) {
@@ -87,25 +82,42 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if (worker != null) {
-                worker.cancel(true);
-            }
+            System.out.println(e.getActionCommand() + "deleteListener");
+            model.deleteBook(e.getActionCommand());
+            manager.writeToFile(model.getAllBooks());
+            renderAllBooks(model.getAllBooks());
 
-            worker = new SwingWorker<>() {
-                @Override
-                protected Void doInBackground() {
 
-                    model.deleteBook(e.getActionCommand());
-                    manager.writeToFile(model.getAllBooks());
-                    mainGUI.showBooksGui(model.getAllBooks(), true);
-                    addDeleteListeners();
+        }
+    }
 
-                    return null;
+    private void renderAllBooks(List<LinkedHashMap<String, String>> books) {
 
-                }
-            };
+        mainGUI.clearDisplay();
 
-            worker.execute();
+        int i = 0;
+        for (Map<String, String> bookMap : books) {
+
+            BookForm book = new BookForm(bookMap, i);
+
+            JButton deleteButton = book.getDeleteBtn();
+            deleteButton.addActionListener(new DeleteBooksListener());
+
+            mainGUI.displayBook(book.getBookPanel(), book.getDeleteBtn());
+
+            i++;
+        }
+    }
+
+    private void renderSearchedBooks(List<LinkedHashMap<String, String>> books) {
+
+        mainGUI.clearDisplay();
+
+        for (Map<String, String> bookMap : books) {
+
+            BookForm book = new BookForm(bookMap);
+            mainGUI.displayBook(book.getBookPanel(), book.getDeleteBtn());
+
         }
     }
 
@@ -114,6 +126,7 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
+
             if (worker != null) {
                 worker.cancel(true);
             }
@@ -121,8 +134,8 @@ public class Controller {
             worker = new SwingWorker<>() {
                 @Override
                 protected Void doInBackground() {
-                    mainGUI.showBooksGui(model.getAllBooks(), true);
-                    addDeleteListeners();
+
+                    renderAllBooks(model.getAllBooks());
                     return null;
                 }
             };
@@ -162,20 +175,6 @@ public class Controller {
         }
     }
 
-/*    public class ShowAllWorker extends SwingWorker {
-
-        @Override
-        protected Void doInBackground() throws Exception {
-            return null;
-        }
-    }
-
-    public class SearchWorker extends SwingWorker {
-        @Override
-        protected Void doInBackground() throws Exception {
-            return null;
-        }
-    }*/
 
     class SearchListener implements ActionListener {
 
@@ -191,11 +190,13 @@ public class Controller {
                 @Override
                 protected Void doInBackground() {
                     try {
+
                         //my eyes hurt
-                        mainGUI.showBooksGui(
+                        renderSearchedBooks(
                                 model.getBookSearched(
                                         checker.removePunctuation(
-                                                mainGUI.getFieldText())), false);
+                                                mainGUI.getFieldText())));
+
                     } catch (InvalidNameException ex) {
                         mainGUI.showPopUpMain(ex.getMessage());
                     }

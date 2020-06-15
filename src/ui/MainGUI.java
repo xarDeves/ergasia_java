@@ -39,7 +39,32 @@ public class MainGUI extends JFrame {
 
     }
 
+    public void clearDisplay() {
+
+        resultsPanel.removeAll();
+        deleteButtons.clear();
+    }
+
+    public void displayBook(JPanel book) {
+
+        resultsPanel.add(book);
+
+        resultsPanel.revalidate();
+        resultsPanel.repaint();
+    }
+
+    public void displayBook(JPanel book, JButton deleteBtn) {
+
+        resultsPanel.add(book);
+        deleteButtons.add(deleteBtn);
+
+        resultsPanel.revalidate();
+        resultsPanel.repaint();
+    }
+
     //it would be better to iterate the list in the Controller and pass each entry here ?
+    //my eyes hurt. AGAIN.
+
     public void showBooksGui(List<LinkedHashMap<String, String>> books, Boolean deleteButton) {
 
         resultsPanel.removeAll();
@@ -70,7 +95,6 @@ public class MainGUI extends JFrame {
                 labelBox.add(info);
             }
 
-            resultsPanel.add(Box.createHorizontalStrut(2));
 
             resultsPanel.revalidate();
             resultsPanel.repaint();
@@ -81,6 +105,7 @@ public class MainGUI extends JFrame {
         resultsPanel.repaint();
 
     }
+
 
     public void showPopUpMain(String error) {
 
@@ -163,6 +188,5 @@ public class MainGUI extends JFrame {
     public JComponent $$$getRootComponent$$$() {
         return mainPanel;
     }
-
 
 }
