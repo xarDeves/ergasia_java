@@ -1,5 +1,6 @@
 package model;
 
+import ui.BookForm;
 import ui.InsertGUI;
 import ui.MainGUI;
 import utilities.CheckerSingleton;
@@ -20,24 +21,9 @@ import java.util.Map;
  * Main logic is here.
  * All the listeners are "custom made" (see inner classes bellow)
  * as the controller is instantiated in main, they get attached to the ui elements.
- * Using Synchronized Threads to handle IO, ensures collision avoidance and data loss.
+ * Using Synchronized Threads to handle IO, ensures collision and data loss avoidance.
  * (Arguably over engineered and unnecessary complex for such assignment)
  * (i wasn't able to test whether IO is actually thread safe, Although it should be)
- *
- * Note on SwingWorkers:
- * As per the documentation the correct usage is for the "DoInBackground" to compute
- * and "done" to post the results but "done" takes a list of chunks as an argument
- * meaning i would need to abstract the panel which displays the info from each book
- * in a separate class (which would be better in anyway but i tried it, and it didn't work out).
- * I understand it is a sloppy approach but frankly i don't really see a point to use "done" in this case.
- *
- * also the:
- *
- *          if (worker != null) {
-                worker.cancel(true);
-            }
- *
- * does not work for some reason.
  */
 
 public class Controller {
@@ -47,10 +33,11 @@ public class Controller {
     private final IOManagerSingleton manager;
     private final CheckerSingleton checker;
     private boolean insertFormExists = false;
-    private SwingWorker<Void, Void> worker;
     private InsertGUI insertGUI;
+    private Thread displayThread;
 
     public Controller(MainGUI mainGUI, Model model) {
+
         this.mainGUI = mainGUI;
         this.model = model;
         this.manager = IOManagerSingleton.getInstance();
@@ -77,27 +64,13 @@ public class Controller {
         }
     }
 
-    class DeleteBooksListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            System.out.println(e.getActionCommand() + "deleteListener");
-            model.deleteBook(e.getActionCommand());
-            manager.writeToFile(model.getAllBooks());
-            renderAllBooks(model.getAllBooks());
-
-
-        }
-    }
-
     private void renderAllBooks(List<LinkedHashMap<String, String>> books) {
 
         mainGUI.clearDisplay();
 
         int i = 0;
-        for (Map<String, String> bookMap : books) {
 
+        for (Map<String, String> bookMap : books) {
             BookForm book = new BookForm(bookMap, i);
 
             JButton deleteButton = book.getDeleteBtn();
@@ -107,6 +80,7 @@ public class Controller {
 
             i++;
         }
+
     }
 
     private void renderSearchedBooks(List<LinkedHashMap<String, String>> books) {
@@ -121,26 +95,69 @@ public class Controller {
         }
     }
 
+    class DeleteBooksListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+            if (displayThread != null) {
+                displayThread.stop();
+            }
+
+            displayThread = new Thread(() -> {
+
+                model.deleteBook(e.getActionCommand());
+                manager.writeToFile(model.getAllBooks());
+                renderAllBooks(model.getAllBooks());
+            });
+
+            displayThread.start();
+
+        }
+    }
+
     class ShowBooksListener implements ActionListener {
 
         @Override
         public void actionPerformed(ActionEvent e) {
 
 
-            if (worker != null) {
-                worker.cancel(true);
+            if (displayThread != null) {
+                displayThread.stop();
             }
 
-            worker = new SwingWorker<>() {
-                @Override
-                protected Void doInBackground() {
+            displayThread = new Thread(() -> renderAllBooks(model.getAllBooks()));
 
-                    renderAllBooks(model.getAllBooks());
-                    return null;
+            displayThread.start();
+
+        }
+    }
+
+    class SearchListener implements ActionListener {
+
+        @Override
+        public void actionPerformed(ActionEvent e) {
+
+
+            if (displayThread != null) {
+                displayThread.stop();
+            }
+
+            displayThread = new Thread(() -> {
+                try {
+
+                    //my eyes hurt
+                    renderSearchedBooks(
+                            model.getBookSearched(
+                                    checker.removePunctuation(
+                                            mainGUI.getFieldText())));
+
+                } catch (InvalidNameException ex) {
+                    mainGUI.showPopUpMain(ex.getMessage());
                 }
-            };
+            });
 
-            worker.execute();
+            displayThread.start();
 
         }
     }
@@ -171,40 +188,6 @@ public class Controller {
 
             manager.setGui(insertGUI);
             manager.handleData(model);
-
-        }
-    }
-
-
-    class SearchListener implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent e) {
-
-            if (worker != null) {
-                worker.cancel(true);
-            }
-
-            worker = new SwingWorker<>() {
-
-                @Override
-                protected Void doInBackground() {
-                    try {
-
-                        //my eyes hurt
-                        renderSearchedBooks(
-                                model.getBookSearched(
-                                        checker.removePunctuation(
-                                                mainGUI.getFieldText())));
-
-                    } catch (InvalidNameException ex) {
-                        mainGUI.showPopUpMain(ex.getMessage());
-                    }
-                    return null;
-                }
-            };
-
-            worker.execute();
 
         }
     }

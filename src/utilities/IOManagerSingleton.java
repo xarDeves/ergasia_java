@@ -39,6 +39,8 @@ public class IOManagerSingleton {
                 fw.write("\n");
             }
 
+            fw.flush();
+
         } catch (FileNotFoundException fe) {
             System.out.println("File not found");
         } catch (IOException e) {

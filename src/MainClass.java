@@ -5,7 +5,10 @@
  *
  * tested with 1.000.000 lines of text in "Books.txt"
  * ram usage before rendering the books ~160mb
- * ram usage after rendering the books ~750mb
+ * ram usage after rendering the books ~1gb (this took some time...)
+ *
+ * initially i rendered the form without abstracting it in "BookForm" class
+ * which used ~760mb but the code was sloppy.
  *
  * Ντεβές Χαράλαμπος - 15766 -
  *

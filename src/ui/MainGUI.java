@@ -4,9 +4,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
 
 public class MainGUI extends JFrame {
 
@@ -62,10 +59,8 @@ public class MainGUI extends JFrame {
         resultsPanel.repaint();
     }
 
-    //it would be better to iterate the list in the Controller and pass each entry here ?
-    //my eyes hurt. AGAIN.
-
-    public void showBooksGui(List<LinkedHashMap<String, String>> books, Boolean deleteButton) {
+    //that was my initial implementation for displaying each book
+/*    public void showBooksGui(List<LinkedHashMap<String, String>> books, Boolean deleteButton) {
 
         resultsPanel.removeAll();
         deleteButtons.clear();
@@ -104,8 +99,7 @@ public class MainGUI extends JFrame {
         resultsPanel.revalidate();
         resultsPanel.repaint();
 
-    }
-
+    }*/
 
     public void showPopUpMain(String error) {
 
