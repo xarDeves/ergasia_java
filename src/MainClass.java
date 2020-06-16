@@ -8,7 +8,7 @@
  * ram usage after rendering the books ~1gb (this took some time...)
  *
  * initially i rendered the form without abstracting it in "BookForm" class
- * which used ~760mb but the code was sloppy.
+ * which used ~760mb but the code was sloppy (go to MainGUI -> showBooksGui).
  *
  * Ντεβές Χαράλαμπος - 15766 -
  *

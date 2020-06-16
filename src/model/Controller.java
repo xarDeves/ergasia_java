@@ -6,8 +6,10 @@ import ui.MainGUI;
 import utilities.CheckerSingleton;
 import utilities.IOManagerSingleton;
 
+import javax.imageio.ImageIO;
 import javax.naming.InvalidNameException;
 import javax.swing.*;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowAdapter;
@@ -69,9 +71,18 @@ public class Controller {
         mainGUI.clearDisplay();
 
         int i = 0;
+        ImageIcon icon = null;
+
+        //fetch the image and convert it to an icon for the button
+        try {
+            Image sourceImage = ImageIO.read(getClass().getResource("/res/bin.png"));
+            icon = new ImageIcon(sourceImage);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         for (Map<String, String> bookMap : books) {
-            BookForm book = new BookForm(bookMap, i);
+            BookForm book = new BookForm(bookMap, i, icon);
 
             JButton deleteButton = book.getDeleteBtn();
             deleteButton.addActionListener(new DeleteBooksListener());
@@ -100,19 +111,25 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if (displayThread != null) {
-                displayThread.stop();
+            int confirm = JOptionPane.showConfirmDialog(
+                    null, "Are you sure you want to delete this book?");
+
+            if (confirm == 0) {
+
+                if (displayThread != null) {
+                    displayThread.stop();
+                }
+
+                displayThread = new Thread(() -> {
+
+                    model.deleteBook(e.getActionCommand());
+                    manager.writeToFile(model.getAllBooks());
+                    renderAllBooks(model.getAllBooks());
+                });
+
+                displayThread.start();
+
             }
-
-            displayThread = new Thread(() -> {
-
-                model.deleteBook(e.getActionCommand());
-                manager.writeToFile(model.getAllBooks());
-                renderAllBooks(model.getAllBooks());
-            });
-
-            displayThread.start();
-
         }
     }
 
@@ -196,6 +213,8 @@ public class Controller {
 
         @Override
         public void actionPerformed(ActionEvent e) {
+
+            System.exit(0);
 
         }
     }
