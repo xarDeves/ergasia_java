@@ -1,5 +1,6 @@
 package model;
 
+import javax.swing.*;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -24,6 +25,7 @@ public class Model {
 
     private final List<LinkedHashMap<String, String>> bookList;
 
+    //i chose to use an ArrayList instead of a LinkedList, since performing a search is faster
     public Model() {
         bookList = new ArrayList<>();
     }

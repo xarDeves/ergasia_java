@@ -32,17 +32,17 @@ public class Controller {
 
     private final MainGUI mainGUI;
     private final Model model;
-    private final IOManagerSingleton manager;
+    private final IOManagerSingleton ioManager;
     private final CheckerSingleton checker;
     private boolean insertFormExists = false;
     private InsertGUI insertGUI;
-    private Thread displayThread;
+    private volatile Thread displayThread;
 
     public Controller(MainGUI mainGUI, Model model) {
 
         this.mainGUI = mainGUI;
         this.model = model;
-        this.manager = IOManagerSingleton.getInstance();
+        this.ioManager = IOManagerSingleton.getInstance();
         this.checker = CheckerSingleton.getInstance();
 
         this.mainGUI.addShowBooksListener(new ShowBooksListener());
@@ -51,7 +51,7 @@ public class Controller {
         this.mainGUI.addSearchListener(new SearchListener());
 
         try {
-            manager.readFromFile(model);
+            ioManager.readFromFile(model);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -66,11 +66,10 @@ public class Controller {
         }
     }
 
-    private void renderAllBooks(List<LinkedHashMap<String, String>> books) {
+    private void renderBooks(List<LinkedHashMap<String, String>> books) {
 
         mainGUI.clearDisplay();
 
-        int i = 0;
         ImageIcon icon = null;
 
         //fetch the image and convert it to an icon for the button
@@ -81,29 +80,23 @@ public class Controller {
             e.printStackTrace();
         }
 
-        for (Map<String, String> bookMap : books) {
+        //classic instead of advanced for loop had to be used here
+        //else "ConcurrentModificationException" occurs
+        for (int i = 0; i < books.size(); i++) {
+            LinkedHashMap<String, String> bookMap = books.get(i);
+
+            if (Thread.currentThread().isInterrupted()) {
+                return;
+            }
+
             BookForm book = new BookForm(bookMap, i, icon);
 
             JButton deleteButton = book.getDeleteBtn();
             deleteButton.addActionListener(new DeleteBooksListener());
 
-            mainGUI.displayBook(book.getBookPanel(), book.getDeleteBtn());
-
-            i++;
+            mainGUI.displayBook(book.getBookPanel());
         }
 
-    }
-
-    private void renderSearchedBooks(List<LinkedHashMap<String, String>> books) {
-
-        mainGUI.clearDisplay();
-
-        for (Map<String, String> bookMap : books) {
-
-            BookForm book = new BookForm(bookMap);
-            mainGUI.displayBook(book.getBookPanel(), book.getDeleteBtn());
-
-        }
     }
 
     class DeleteBooksListener implements ActionListener {
@@ -117,14 +110,29 @@ public class Controller {
             if (confirm == 0) {
 
                 if (displayThread != null) {
-                    displayThread.stop();
+                    displayThread.interrupt();
                 }
+
+                Thread deleteThread = new Thread(() -> {
+
+                    model.deleteBook(e.getActionCommand());
+                    ioManager.writeToFile(model.getAllBooks());
+
+                });
+
+                deleteThread.start();
+                try {
+                    deleteThread.join();
+                } catch (InterruptedException interruptedException) {
+                    interruptedException.printStackTrace();
+                }
+
+                mainGUI.SuccessPopUp();
 
                 displayThread = new Thread(() -> {
 
-                    model.deleteBook(e.getActionCommand());
-                    manager.writeToFile(model.getAllBooks());
-                    renderAllBooks(model.getAllBooks());
+                    renderBooks(model.getAllBooks());
+
                 });
 
                 displayThread.start();
@@ -138,12 +146,11 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-
             if (displayThread != null) {
-                displayThread.stop();
+                displayThread.interrupt();
             }
 
-            displayThread = new Thread(() -> renderAllBooks(model.getAllBooks()));
+            displayThread = new Thread(() -> renderBooks(model.getAllBooks()));
 
             displayThread.start();
 
@@ -155,22 +162,29 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-
             if (displayThread != null) {
-                displayThread.stop();
+                displayThread.interrupt();
             }
 
             displayThread = new Thread(() -> {
+
                 try {
 
                     //my eyes hurt
-                    renderSearchedBooks(
+                    List<LinkedHashMap<String, String>> booksFound =
                             model.getBookSearched(
                                     checker.removePunctuation(
-                                            mainGUI.getFieldText())));
+                                            mainGUI.getFieldText()));
+
+                    if (booksFound.isEmpty()) {
+                        mainGUI.NoBooksFoundPopUp();
+                    } else {
+                        renderBooks(booksFound);
+                    }
+
 
                 } catch (InvalidNameException ex) {
-                    mainGUI.showPopUpMain(ex.getMessage());
+                    mainGUI.ErrorPopUp(ex.getMessage());
                 }
             });
 
@@ -203,8 +217,8 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            manager.setGui(insertGUI);
-            manager.handleData(model);
+            ioManager.setGui(insertGUI);
+            ioManager.handleData(model);
 
         }
     }

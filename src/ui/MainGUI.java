@@ -16,7 +16,6 @@ public class MainGUI extends JFrame {
     private JPanel resultsPanel;
     private JScrollPane booksScrollPane;
 
-    private final ArrayList<JButton> deleteButtons = new ArrayList<>();
 
     public MainGUI() {
 
@@ -39,21 +38,15 @@ public class MainGUI extends JFrame {
     public void clearDisplay() {
 
         resultsPanel.removeAll();
-        deleteButtons.clear();
+
+        resultsPanel.revalidate();
+        resultsPanel.repaint();
+
     }
 
     public void displayBook(JPanel book) {
 
         resultsPanel.add(book);
-
-        resultsPanel.revalidate();
-        resultsPanel.repaint();
-    }
-
-    public void displayBook(JPanel book, JButton deleteBtn) {
-
-        resultsPanel.add(book);
-        deleteButtons.add(deleteBtn);
 
         resultsPanel.revalidate();
         resultsPanel.repaint();
@@ -101,11 +94,31 @@ public class MainGUI extends JFrame {
 
     }*/
 
-    public void showPopUpMain(String error) {
+    //these could be in the controller as well
+    //since they are UI elements i chose to leave them here
+    public void ErrorPopUp(String error) {
 
         JOptionPane.showMessageDialog(
                 new JFrame(),
                 error,
+                "Error",
+                JOptionPane.ERROR_MESSAGE);
+    }
+
+    public void SuccessPopUp() {
+
+        JOptionPane.showMessageDialog(
+                new JFrame(),
+                "Book Deleted Successfully",
+                "Done",
+                JOptionPane.PLAIN_MESSAGE);
+    }
+
+    public void NoBooksFoundPopUp() {
+
+        JOptionPane.showMessageDialog(
+                new JFrame(),
+                "No Books Found",
                 "Error",
                 JOptionPane.ERROR_MESSAGE);
     }
@@ -128,9 +141,6 @@ public class MainGUI extends JFrame {
         searchBtn.addActionListener(searchListener);
     }
 
-    public ArrayList<JButton> getDeleteButtons() {
-        return deleteButtons;
-    }
 
     public String getFieldText() {
         return searchField.getText().toUpperCase();
