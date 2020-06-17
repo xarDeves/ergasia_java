@@ -25,6 +25,12 @@ public class CheckerSingleton {
         return instance;
     }
 
+    public void checkListEmpty(List<LinkedHashMap<String, String>> booksFound) throws InvalidNameException {
+
+        if (booksFound.isEmpty()) throw new InvalidNameException("No such book");
+
+    }
+
     public void checkEmpty(String value) throws InvalidNameException {
 
         if (value.equals("")) throw new InvalidNameException("A field is empty");

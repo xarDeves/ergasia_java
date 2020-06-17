@@ -3,7 +3,6 @@ package ui;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionListener;
-import java.util.ArrayList;
 
 public class MainGUI extends JFrame {
 
@@ -96,7 +95,7 @@ public class MainGUI extends JFrame {
 
     //these could be in the controller as well
     //since they are UI elements i chose to leave them here
-    public void ErrorPopUp(String error) {
+    public void errorPopUp(String error) {
 
         JOptionPane.showMessageDialog(
                 new JFrame(),
@@ -114,14 +113,6 @@ public class MainGUI extends JFrame {
                 JOptionPane.PLAIN_MESSAGE);
     }
 
-    public void NoBooksFoundPopUp() {
-
-        JOptionPane.showMessageDialog(
-                new JFrame(),
-                "No Books Found",
-                "Error",
-                JOptionPane.ERROR_MESSAGE);
-    }
 
     public void addQuitListener(ActionListener quitListener) {
         quitBtn.addActionListener(quitListener);

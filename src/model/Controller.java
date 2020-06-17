@@ -17,13 +17,12 @@ import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 /*
  * Main logic is here.
  * All the listeners are "custom made" (see inner classes bellow)
  * as the controller is instantiated in main, they get attached to the ui elements.
- * Using Synchronized Threads to handle IO, ensures collision and data loss avoidance.
+ * Using Synchronized methods to handle IO, ensures collision and data loss avoidance.
  * (Arguably over engineered and unnecessary complex for such assignment)
  * (i wasn't able to test whether IO is actually thread safe, Although it should be)
  */
@@ -36,7 +35,13 @@ public class Controller {
     private final CheckerSingleton checker;
     private boolean insertFormExists = false;
     private InsertGUI insertGUI;
-    private volatile Thread displayThread;
+    //I am not sure "volatile" is needed but just in case...
+    //I also run a few tests using "Thread.currentThread().interrupt()"
+    //instead of using "renderThread" and it worked as well
+    //but i chose to stick with a reference variable.
+    private volatile Thread renderThread;
+    private String bookSearched;
+    private boolean searchPerformed = false;
 
     public Controller(MainGUI mainGUI, Model model) {
 
@@ -109,8 +114,8 @@ public class Controller {
 
             if (confirm == 0) {
 
-                if (displayThread != null) {
-                    displayThread.interrupt();
+                if (renderThread != null) {
+                    renderThread.interrupt();
                 }
 
                 Thread deleteThread = new Thread(() -> {
@@ -127,15 +132,21 @@ public class Controller {
                     interruptedException.printStackTrace();
                 }
 
+                //i had to make a separate thread because the popup would not show up correctly
                 mainGUI.SuccessPopUp();
 
-                displayThread = new Thread(() -> {
+                renderThread = new Thread(() -> {
 
-                    renderBooks(model.getAllBooks());
+                    //sloppy...but gets the job done relatively simply
+                    if (searchPerformed) {
+                        renderBooks(model.getBookSearched(bookSearched));
+                    } else {
+                        renderBooks(model.getAllBooks());
+                    }
 
                 });
 
-                displayThread.start();
+                renderThread.start();
 
             }
         }
@@ -146,13 +157,15 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if (displayThread != null) {
-                displayThread.interrupt();
+            if (renderThread != null) {
+                renderThread.interrupt();
             }
 
-            displayThread = new Thread(() -> renderBooks(model.getAllBooks()));
+            searchPerformed = false;
 
-            displayThread.start();
+            renderThread = new Thread(() -> renderBooks(model.getAllBooks()));
+
+            renderThread.start();
 
         }
     }
@@ -162,33 +175,31 @@ public class Controller {
         @Override
         public void actionPerformed(ActionEvent e) {
 
-            if (displayThread != null) {
-                displayThread.interrupt();
+            if (renderThread != null) {
+                renderThread.interrupt();
             }
 
-            displayThread = new Thread(() -> {
+            renderThread = new Thread(() -> {
 
                 try {
 
-                    //my eyes hurt
-                    List<LinkedHashMap<String, String>> booksFound =
-                            model.getBookSearched(
-                                    checker.removePunctuation(
-                                            mainGUI.getFieldText()));
+                    bookSearched = checker.removePunctuation(mainGUI.getFieldText());
 
-                    if (booksFound.isEmpty()) {
-                        mainGUI.NoBooksFoundPopUp();
-                    } else {
-                        renderBooks(booksFound);
-                    }
+                    List<LinkedHashMap<String, String>> booksFound;
+                    booksFound = model.getBookSearched(bookSearched);
 
+                    checker.checkListEmpty(booksFound);
+
+                    searchPerformed = true;
+
+                    renderBooks(booksFound);
 
                 } catch (InvalidNameException ex) {
-                    mainGUI.ErrorPopUp(ex.getMessage());
+                    mainGUI.errorPopUp(ex.getMessage());
                 }
             });
 
-            displayThread.start();
+            renderThread.start();
 
         }
     }

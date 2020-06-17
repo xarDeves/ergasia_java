@@ -10,7 +10,7 @@ import java.util.Map;
 
 //Synchronized methods ensure thread safety (just in case).
 //The fact that this is actually harder to implement than a database makes me cry.
-//Also it might have been better to set the "Model" as a field rather than passing it as an argument.
+//Every time a delete or insert operation is performed the file get re-created from scratch
 public class IOManagerSingleton {
 
     private InsertGUI insertGUI;
