@@ -68,10 +68,10 @@ public class CheckerSingleton {
             long isbnNum = Long.parseLong(value);
 
             if (isbnNum < 9780000000000L || isbnNum > 9790000000000L) {
-                throw new InvalidParameterException("ISBN must be a number between 978 and 979");
+                throw new InvalidParameterException("ISBN must be a number between 9780000000000 and 9790000000000");
             }
         } catch (Exception e) {
-            throw new InvalidParameterException("ISBN must be a number between 978 and 979");
+            throw new InvalidParameterException("ISBN must be a number between 9780000000000 and 9790000000000");
         }
 
         //check for isbn uniqueness.

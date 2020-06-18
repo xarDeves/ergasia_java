@@ -1,0 +1,8 @@
+<component name="ArtifactManager">
+  <artifact type="jar" build-on-make="true" name="ergasia java:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/ergasia_java_jar</output-path>
+    <root id="archive" name="ergasia java.jar">
+      <element id="module-output" name="ergasia java" />
+    </root>
+  </artifact>
+</component>

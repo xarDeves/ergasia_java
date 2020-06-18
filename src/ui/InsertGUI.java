@@ -121,20 +121,20 @@ public class InsertGUI implements ActionListener {
 
         switch (command) {
 
-            case "Scientific" -> {
+            case "Scientific":
                 branchField.setEditable(true);
                 radioTypeConfig(scientificGroup, literatureGroup);
                 radioGroupSelected = scientificGroup;
                 superTypeSelected = "Scientific";
-            }
+                break;
 
-            case "Literature" -> {
+            case "Literature":
                 branchField.setEditable(false);
                 radioTypeConfig(literatureGroup, scientificGroup);
                 radioGroupSelected = literatureGroup;
                 superTypeSelected = "Literature";
                 branchField.setText("");
-            }
+                break;
 
         }
     }
