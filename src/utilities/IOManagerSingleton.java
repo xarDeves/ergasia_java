@@ -10,7 +10,7 @@ import java.util.Map;
 
 //Synchronized methods ensure thread safety (just in case).
 //The fact that this is actually harder to implement than a database makes me cry.
-//Every time a delete or insert operation is performed the file get re-created from scratch
+//Every time a delete or insert operation is performed the file gets re-created from scratch
 public class IOManagerSingleton {
 
     private InsertGUI insertGUI;
@@ -18,7 +18,8 @@ public class IOManagerSingleton {
 
     private static IOManagerSingleton instance = null;
 
-    private IOManagerSingleton() { }
+    private IOManagerSingleton() {
+    }
 
     public static IOManagerSingleton getInstance() {
         if (instance == null)
